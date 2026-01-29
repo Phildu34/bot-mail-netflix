@@ -12,7 +12,7 @@ const {
 } = process.env;
 
 if (!IMAP_USER || !IMAP_PASS) {
-  console.error('Faltan IMAP_USER o IMAP_PASS en variables de entorno');
+  console.error("IMAP_USER ou IMAP_PASS manquent dans les variables d'environnement");
   process.exit(1);
 }
 
@@ -28,9 +28,9 @@ async function main() {
   });
 
   try {
-    // console.log('Conectando a IMAP...');
+    // console.log('Connexion à IMAP...');
     await client.connect();
-    // console.log('Conectado.');
+    // console.log('Connecté.');
 
     let lock = await client.getMailboxLock('INBOX');
     try {
@@ -40,12 +40,12 @@ async function main() {
       });
 
       if (!uids || uids.length === 0) {
-        // console.log('No hay mails nuevos de Netflix');
+        // console.log('Pas de nouveaux emails de Netflix');
         return;
       }
 
       const lastSeq = uids[uids.length - 1];
-      //console.log('Procesando mail de Netflix...');
+      // console.log('Traitement de l\'email Netflix...');
 
       const { content } = await client.download(lastSeq, false);
       
@@ -59,7 +59,7 @@ async function main() {
 
       const html = parsed.html;
       if (!html) {
-        // console.log('El mail no tiene HTML');
+        // console.log("L'email ne contient pas de HTML");
         return;
       }
 
@@ -68,13 +68,13 @@ async function main() {
 
       $('a').each((i, el) => {
         const text = $(el).text().trim();
-        if (text.toLowerCase().includes("Oui, c'était moi")) {
+        if (text.toLowerCase().includes('oui, c\'était moi')) {
           targetHref = $(el).attr('href');
         }
       });
 
       if (!targetHref) {
-        // console.log('No se encontró el enlace de confirmación');
+        // console.log("Lien de confirmation introuvable");
         await client.messageFlagsAdd(lastSeq, ['\\Seen']);
         return;
       }
@@ -110,7 +110,7 @@ async function main() {
         }
         
       } catch (error) {
-        // console.error('❌ Error:', error.message);
+        // console.error('❌ Erreur :', error.message);
       } finally {
         await browser.close();
       }
@@ -121,7 +121,7 @@ async function main() {
       lock.release();
     }
   } catch (err) {
-    console.error('Error:', err.message);
+    console.error('Erreur :', err.message);
   } finally {
     await client.logout();
   }
