@@ -1,55 +1,55 @@
 # Bot Mail Netflix - Docker
 
-Bot automático para confirmar Netflix Household desde correos de Netflix.
+Bot automatique pour confirmer le foyer Netflix à partir des emails de Netflix.
 
-## Requisitos
+## Prérequis
 
-- Docker y Docker Compose instalados
-- Archivo `.env` con las credenciales de tu correo
+- Docker et Docker Compose installés
+- Fichier `.env` avec les identifiants de votre email
 
-## Configuración
+## Configuration
 
-1. Copia el archivo de ejemplo y configura tus credenciales:
+1. Copiez le fichier d'exemple et configurez vos identifiants :
 
 ```bash
 cp .env.example .env
 ```
 
-2. Edita `.env` con tus datos:
+2. Éditez `.env` avec vos données :
 
 ```
-IMAP_USER=tu-email@gmail.com
-IMAP_PASS=tu-contraseña-app-gmail
+IMAP_USER=ton-email@gmail.com
+IMAP_PASS=ton-mot-de-passe-d’application-gmail
 ```
 
-**Nota**: Para Gmail, necesitas generar una "Contraseña de aplicación" en tu cuenta de Google.
+**Note** : Pour Gmail, vous devez générer un « Mot de passe d’application » dans votre compte Google.
 
-## Uso
+## Utilisation
 
-### Construir y ejecutar:
+### Construire et exécuter :
 
 ```bash
 docker-compose up -d --build
 ```
 
-### Ver logs:
+### Voir les logs :
 
 ```bash
 docker-compose logs -f
 ```
 
-### Detener el bot:
+### Arrêter le bot :
 
 ```bash
 docker-compose down
 ```
 
-### Reiniciar el bot:
+### Redémarrer le bot :
 
 ```bash
 docker-compose restart
 ```
 
-## Funcionamiento
+## Fonctionnement
 
-El bot se ejecuta cada **2 minutos** automáticamente dentro del contenedor, revisando si hay nuevos correos de Netflix para confirmar el Household.
+Le bot s’exécute automatiquement toutes les **1 minutes** dans le conteneur, en vérifiant s’il y a de nouveaux emails de Netflix pour confirmer le foyer (Household).
