@@ -12,7 +12,7 @@ services:
       - IMAP_PORT=${IMAP_PORT:-993}
     env_file:
       - .env
-    # Ejecutar cada 2 minutos con un loop
-    command: sh -c "while true; do node index.js; sleep 120; done"
+    # Ejecutar cada 1 minutos con un loop
+    command: sh -c "while true; do node index.js; sleep 60; done"
     volumes:
       - ./logs:/app/logs

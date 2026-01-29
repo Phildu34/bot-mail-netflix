@@ -28,9 +28,9 @@ async function main() {
   });
 
   try {
-    console.log('Conectando a IMAP...');
+    // console.log('Conectando a IMAP...');
     await client.connect();
-    console.log('Conectado.');
+    // console.log('Conectado.');
 
     let lock = await client.getMailboxLock('INBOX');
     try {
@@ -40,12 +40,12 @@ async function main() {
       });
 
       if (!uids || uids.length === 0) {
-        console.log('No hay mails nuevos de Netflix');
+        // console.log('No hay mails nuevos de Netflix');
         return;
       }
 
       const lastSeq = uids[uids.length - 1];
-      console.log('Procesando mail de Netflix...');
+      //console.log('Procesando mail de Netflix...');
 
       const { content } = await client.download(lastSeq, false);
       
@@ -59,7 +59,7 @@ async function main() {
 
       const html = parsed.html;
       if (!html) {
-        console.log('El mail no tiene HTML');
+        // console.log('El mail no tiene HTML');
         return;
       }
 
@@ -68,18 +68,18 @@ async function main() {
 
       $('a').each((i, el) => {
         const text = $(el).text().trim();
-        if (text.toLowerCase().includes('yes, this was me')) {
+        if (text.toLowerCase().includes("Oui, c'était moi")) {
           targetHref = $(el).attr('href');
         }
       });
 
       if (!targetHref) {
-        console.log('No se encontró el enlace de confirmación');
+        // console.log('No se encontró el enlace de confirmación');
         await client.messageFlagsAdd(lastSeq, ['\\Seen']);
         return;
       }
 
-      console.log('Confirmando Netflix Household...');
+      console.log('Mail de confirmation de foyer reçu');
 
       const browser = await puppeteer.launch({
         headless: true,
@@ -103,20 +103,20 @@ async function main() {
         
         const pageContent = await page.content();
         
-        if (pageContent.includes('updated') || pageContent.includes('confirmed') || pageContent.includes('Netflix Household')) {
-          console.log('✅ Netflix Household actualizado correctamente');
+        if (pageContent.includes('mis à jour') || pageContent.includes('confirmé') || pageContent.includes('foyer Netflix')) {
+          console.log('✅ Foyer Netflix mis à jour !');
         } else {
-          console.log('⚠️  Confirmación completada');
+          console.log('⚠️  Sans doute un problème de mise à jour du foyer Netflix');
         }
         
       } catch (error) {
-        console.error('❌ Error:', error.message);
+        // console.error('❌ Error:', error.message);
       } finally {
         await browser.close();
       }
 
       await client.messageFlagsAdd(lastSeq, ['\\Seen']);
-      console.log('Mail procesado');
+      console.log('Mail traité');
     } finally {
       lock.release();
     }
