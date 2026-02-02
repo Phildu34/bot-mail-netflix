@@ -7,8 +7,8 @@ const puppeteer = require('puppeteer');
 
 const logger = pino({
   level: process.env.LOG_LEVEL || 'info',
-  base: { service: 'bot-mail-netflix' },
-  timestamp: pino.stdTimeFunctions.isoTime
+  base: { component: 'bot-mail-netflix' },
+  timestamp: pino.stdTimeFunctions.epochTime
 });
 
 const {
