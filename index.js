@@ -12,7 +12,10 @@ const {
 } = process.env;
 
 if (!IMAP_USER || !IMAP_PASS) {
-  console.error("IMAP_USER ou IMAP_PASS manquent dans les variables d'environnement");
+    console.log(JSON.stringify({
+        timestamp: new Date().toISOString(),
+        level: 'info',
+        message: 'IMAP_USER ou IMAP_PASS manquent dans les variables d\'environnement' }));
   process.exit(1);
 }
 
@@ -28,24 +31,39 @@ async function main() {
   });
 
   try {
-    // console.log('Connexion à IMAP...');
+    console.log(JSON.stringify({
+        timestamp: new Date().toISOString(),
+        level: 'info',
+        message: 'Connexion à IMAP...' }));
+    
     await client.connect();
-    // console.log('Connecté.');
+    
+    console.log(JSON.stringify({
+        timestamp: new Date().toISOString(),
+        level: 'info',
+        message: 'Connecté à IMAP' }));
 
     let lock = await client.getMailboxLock('INBOX');
     try {
-      let uids = await client.search({
-        from: 'info@account.netflix.com',
-        seen: false
-      });
+        let uids = await client.search({
+            from: 'info@account.netflix.com',
+            seen: false
+        });
 
-      if (!uids || uids.length === 0) {
-        // console.log('Pas de nouveaux emails de Netflix');
+        if (!uids || uids.length === 0) {
+        console.log(JSON.stringify({
+            timestamp: new Date().toISOString(),
+            level: 'info',
+            message: 'Pas de nouveaux emails de Netflix' }));
         return;
-      }
+        }
 
-      const lastSeq = uids[uids.length - 1];
-      // console.log('Traitement de l\'email Netflix...');
+        const lastSeq = uids[uids.length - 1];
+        
+        console.log(JSON.stringify({
+            timestamp: new Date().toISOString(),
+            level: 'info',
+            message: 'Traitement de l\'email Netflix...' }));
 
       const { content } = await client.download(lastSeq, false);
       
@@ -53,13 +71,17 @@ async function main() {
       for await (const chunk of content) {
         chunks.push(chunk);
       }
+        
       const source = Buffer.concat(chunks);
 
       const parsed = await simpleParser(source);
 
       const html = parsed.html;
       if (!html) {
-        // console.log("L'email ne contient pas de HTML");
+          console.log(JSON.stringify({
+              timestamp: new Date().toISOString(),
+              level: 'info',
+              message: 'L\'email ne contient pas de HTML : sans doute pas un mail de modification du foyer' }));
         return;
       }
 
@@ -74,24 +96,30 @@ async function main() {
       });
 
       if (!targetHref) {
-        // console.log("Lien de confirmation introuvable");
-        await client.messageFlagsAdd(lastSeq, ['\\Seen']);
+          console.log(JSON.stringify({
+              timestamp: new Date().toISOString(),
+              level: 'info',
+              message: 'Lien de confirmation introuvable : sans doute pas un mail de modification du foyer' }));
+          await client.messageFlagsAdd(lastSeq, ['\\Seen']);
         return;
       }
 
-      console.log('Mail de confirmation de foyer reçu');
+        console.log(JSON.stringify({
+            timestamp: new Date().toISOString(),
+            level: 'info',
+            message: 'On a un mail de confirmation de foyer a traiter !' }));
 
-      const browser = await puppeteer.launch({
-        headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
-      });
+        const browser = await puppeteer.launch({
+            headless: true,
+            args: ['--no-sandbox', '--disable-setuid-sandbox']
+            });
 
       const page = await browser.newPage();
       
       await page.goto(targetHref, { waitUntil: 'networkidle2' });
       
-      try {
-        await page.waitForSelector('button[data-uia="set-primary-location-action"]', {
+    try {
+          await page.waitForSelector('button[data-uia="set-primary-location-action"]', {
           timeout: 10000
         });
         
@@ -104,24 +132,41 @@ async function main() {
         const pageContent = await page.content();
         
         if (pageContent.includes('mis à jour') || pageContent.includes('confirmé') || pageContent.includes('foyer Netflix')) {
-          console.log('✅ Foyer Netflix mis à jour !');
+            console.log(JSON.stringify({
+                timestamp: new Date().toISOString(),
+                level: 'info',
+                message: '✅ Foyer Netflix mis à jour !' }));
+
         } else {
-          console.log('⚠️  Sans doute un problème de mise à jour du foyer Netflix');
+            console.log(JSON.stringify({
+                timestamp: new Date().toISOString(),
+                level: 'info',
+                message: '⚠️  Sans doute un problème de mise à jour du foyer Netflix' }));
         }
         
       } catch (error) {
-        // console.error('❌ Erreur :', error.message);
+          console.log(JSON.stringify({
+              timestamp: new Date().toISOString(),
+              level: 'info',
+              message: '❌ Erreur :' + error.message }));
+
       } finally {
         await browser.close();
       }
 
       await client.messageFlagsAdd(lastSeq, ['\\Seen']);
-      console.log('Mail traité');
+      console.log(JSON.stringify({
+         timestamp: new Date().toISOString(),
+         level: 'info',
+         message: 'mail de modification de foyer traité.' }));
     } finally {
       lock.release();
     }
   } catch (err) {
-    console.error('Erreur :', err.message);
+      console.log(JSON.stringify({
+         timestamp: new Date().toISOString(),
+         level: 'error',
+         message: err.message }));
   } finally {
     await client.logout();
   }
