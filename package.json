@@ -17,6 +17,7 @@
     "imapflow": "^1.1.1",
     "mailparser": "^3.9.0",
     "node-fetch": "^3.3.2",
-    "puppeteer": "^24.31.0"
+    "puppeteer": "^24.31.0",
+    "pino":"^10.3.0"
   }
 }
