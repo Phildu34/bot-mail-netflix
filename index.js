@@ -5,11 +5,13 @@ const { simpleParser } = require('mailparser');
 const cheerio = require('cheerio');
 const puppeteer = require('puppeteer');
 
-const logger = pino({
-  level: process.env.LOG_LEVEL || 'info',
-  base: { component: 'bot-mail-netflix' },
-  timestamp: pino.stdTimeFunctions.epochTime
-});
+const logger = pino(
+    {
+        level: process.env.LOG_LEVEL || 'trace',
+        base: { component: 'botmail-netflix' },
+        timestamp: pino.stdTimeFunctions.epochTime
+    }
+);
 
 const {
   IMAP_USER,
@@ -19,7 +21,7 @@ const {
 } = process.env;
 
 if (!IMAP_USER || !IMAP_PASS) {
-    logger.info('IMAP_USER ou IMAP_PASS manquent dans les variables d\'environnement');
+    logger.error('IMAP_USER ou IMAP_PASS manquent dans les variables d\'environnement');
     process.exit(1);
 }
 
@@ -35,11 +37,11 @@ async function main() {
     });
 
     try {
-        logger.info('Connexion à IMAP...');
+        logger.debug('Connexion à IMAP...');
     
         await client.connect();
     
-        logger.info('Connecté à IMAP');
+        logger.debug('Connecté à IMAP');
 
         let lock = await client.getMailboxLock('INBOX');
         
@@ -50,13 +52,13 @@ async function main() {
             });
 
             if (!uids || uids.length === 0) {
-                logger.info('Pas de nouveaux emails de Netflix');
+                logger.debug('Pas de nouveaux emails de Netflix');
             return;
             }
 
             const lastSeq = uids[uids.length - 1];
         
-            logger.info('Traitement de l\'email Netflix...');
+            logger.debug('Traitement de l\'email Netflix...');
 
             const { content } = await client.download(lastSeq, false);
       
@@ -71,7 +73,7 @@ async function main() {
 
             const html = parsed.html;
             if (!html) {
-                logger.info('L\'email ne contient pas de HTML : sans doute pas un mail de modification du foyer');
+                logger.debug('L\'email ne contient pas de HTML : sans doute pas un mail de modification du foyer');
             return;
             }
 
@@ -86,12 +88,12 @@ async function main() {
             });
 
             if (!targetHref) {
-                logger.info('Lien de confirmation introuvable : sans doute pas un mail de modification du foyer');
+                logger.debug('Lien de confirmation introuvable : sans doute pas un mail de modification du foyer');
                 await client.messageFlagsAdd(lastSeq, ['\\Seen']);
                 return;
             }
 
-            logger.info('On a un mail de confirmation de foyer a traiter !');
+            logger.debug('On a un mail de confirmation de foyer a traiter !');
 
             const browser = await puppeteer.launch({
                 headless: true,
@@ -116,26 +118,26 @@ async function main() {
                 const pageContent = await page.content();
         
                 if (pageContent.includes('mis à jour') || pageContent.includes('confirmé') || pageContent.includes('foyer Netflix')) {
-                    logger.info('✅ Foyer Netflix mis à jour !');
+                    logger.debug('✅ Foyer Netflix mis à jour !');
 
                 } else {
-                    logger.info('⚠️  Sans doute un problème de mise à jour du foyer Netflix');
+                    logger.debug('⚠️  Sans doute un problème de mise à jour du foyer Netflix');
                 }
         
             } catch (error) {
-                logger.info( '❌ Erreur :' + error.message);
+                logger.debug( '❌ Erreur :' + error.message);
 
             } finally {
                 await browser.close();
             }
 
             await client.messageFlagsAdd(lastSeq, ['\\Seen']);
-            logger.info( 'mail de modification de foyer traité.');
+            logger.debug( 'mail de modification de foyer traité.');
         } finally {
             lock.release();
         }
     } catch (err) {
-        logger.error(err.message);
+        logger.debug(err.message);
     } finally {
         await client.logout();
     }

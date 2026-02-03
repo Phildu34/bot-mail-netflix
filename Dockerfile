@@ -1,6 +1,6 @@
 FROM node:20-slim
 
-# Instalar dependencias necesarias para Puppeteer en ARM (Raspberry Pi)
+# dépendances pour Raspberry Pi
 RUN apt-get update && apt-get install -y \
     chromium \
     chromium-sandbox \
@@ -25,22 +25,22 @@ RUN apt-get update && apt-get install -y \
     xdg-utils \
     && rm -rf /var/lib/apt/lists/*
 
-# Configurar Puppeteer para usar Chromium del sistema
+# Configuration Puppeteer pour utiliser Chromium
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
     PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 
-# Crear directorio de trabajo
+# Répertoire de travail
 WORKDIR /app
 
-# Copiar package.json
+# Copie package.json
 COPY package.json ./
 
-# Instalar pnpm y dependencias
+# Installe pnpm et ses dépendances
 RUN npm install -g pnpm@10.22.0 && \
     pnpm install
 
-# Copiar el código de la aplicación
+# Copie du code de l'application
 COPY index.js ./
 
-# Ejecutar el bot
+# Exécution
 CMD ["node", "index.js"]

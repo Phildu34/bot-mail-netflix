@@ -1,4 +1,3 @@
-version: '3.8'
 
 services:
   bot-mail-netflix:
@@ -12,7 +11,7 @@ services:
       - IMAP_PORT=${IMAP_PORT:-993}
     env_file:
       - .env
-    # Ejecutar cada 1 minutos con un loop
+    # lance index.js toute les minutes
     command: sh -c "while true; do node index.js; sleep 60; done"
     volumes:
       - ./logs:/app/logs

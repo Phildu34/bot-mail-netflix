@@ -28,27 +28,18 @@ IMAP_PASS=ton-mot-de-passe-d’application-gmail
 
 ### Construire et exécuter :
 
-```bash
-docker-compose up -d --build
-```
-
-### Voir les logs :
+on place les fichiers dans un dossier dans home
+cd ce dossier
 
 ```bash
-docker-compose logs -f
+docker compose up -d --build
 ```
+docker start bot-mail-netflix
 
-### Arrêter le bot :
+docker update --restart unless-stopped bot-mail-netflix
 
-```bash
-docker-compose down
-```
+sudo systemctl start docker
 
-### Redémarrer le bot :
-
-```bash
-docker-compose restart
-```
 
 ## Fonctionnement
 
