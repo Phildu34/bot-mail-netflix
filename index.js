@@ -101,19 +101,31 @@ async function main() {
             });
 
             const page = await browser.newPage();
-      
+            
+            logger.debug('goto : ' + targetHref);
+            
             await page.goto(targetHref, { waitUntil: 'networkidle2' });
       
+            const buttons = await page.$$('button');
+            logger.debug('Nombre de boutons trouvés : ' + buttons.length);
+            const buttonInfos = await Promise.all(
+                buttons.map(btn => page.evaluate(el => ({
+                    text: el.textContent.trim(),
+                    dataUia: el.getAttribute('data-uia')
+                }), btn))
+            );
+            logger.debug('Infos des boutons : ' + JSON.stringify(buttonInfos, null, 2));
+            
             try {
                 await page.waitForSelector('button[data-uia="set-primary-location-action"]', {
-                    timeout: 10000
+                    timeout: 60000
                 });
         
                 await page.click('button[data-uia="set-primary-location-action"]');
         
-                await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 10000 }).catch(() => {});
+                await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 70000 }).catch(() => {});
         
-                await new Promise(resolve => setTimeout(resolve, 2000));
+                await new Promise(resolve => setTimeout(resolve, 80000));
         
                 const pageContent = await page.content();
         
@@ -125,19 +137,19 @@ async function main() {
                 }
         
             } catch (error) {
-                logger.debug( '❌ Erreur :' + error.message);
+                logger.debug( '❌ Erreur : ' + error.message);
 
             } finally {
                 await browser.close();
             }
 
             await client.messageFlagsAdd(lastSeq, ['\\Seen']);
-            logger.debug( 'mail de modification de foyer traité.');
+            logger.debug('mail de modification de foyer traité.');
         } finally {
             lock.release();
         }
     } catch (err) {
-        logger.debug(err.message);
+        logger.debug('❌ horreur : ' + err.message);
     } finally {
         await client.logout();
     }
